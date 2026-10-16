@@ -1,0 +1,1 @@
+Abertura oficial: fundo preto, M.B. STUDIOS em branco, sem barra de carregamento. Duração total de 3 segundos. Aparece apenas na abertura do app, não ao retornar ao menu.

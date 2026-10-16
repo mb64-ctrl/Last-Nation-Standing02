@@ -1,0 +1,15 @@
+LAST NATION STANDING - APK PELO CELULAR
+
+1. Crie um repositorio GitHub (de preferencia PRIVADO).
+2. Extraia ESTE ZIP no celular. O GitHub nao extrai ZIP enviado.
+3. Envie os arquivos E AS PASTAS do projeto para a raiz do repositorio, preservando os caminhos app/... e .github/workflows/build-apk.yml.
+   DICA: No navegador em modo desktop, tente Add file > Upload files; selecao de pastas depende do navegador. Se nao conseguir preservar as pastas, use um cliente Git Android que suporte pastas, ou Termux.
+4. Abra a aba Actions do repositorio, selecione Gerar APK Android e Run workflow.
+5. Espere terminar. Abra a execucao e baixe o artefato LastNationStanding-Android-Beta3-APK.
+6. Extraia o ZIP do artefato e instale app-debug.apk no Android.
+
+AVISOS:
+- Este e um APK de DEBUG para testes, nao um app assinado para distribuicao publica.
+- Nao foi possivel compilar o APK neste ambiente; pode ser necessario corrigir erros apontados no Actions.
+- O jogo ainda usa recursos online; internet pode ser necessaria.
+- Nunca envie senhas ou tokens ao repositorio.

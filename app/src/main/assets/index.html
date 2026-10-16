@@ -1,0 +1,668 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Last Nation Standing — Bandeiras do Mundo</title><script>
+/* Inicializador independente: funciona mesmo se bibliotecas externas não carregarem. */
+(function(){
+ var started=Date.now(), tick;
+ function draw(){
+  var bar=document.getElementById('bootBar'),pct=document.getElementById('bootPercent'),label=document.getElementById('bootText');
+  if(!bar||!pct)return;
+  if(window.__mapReady){clearInterval(tick);return;}
+  var elapsed=Date.now()-started;
+  if(elapsed>30000){
+   clearInterval(tick);
+   if(label)label.textContent='Não foi possível carregar os recursos do mapa. Verifique a internet e tente novamente.';
+   var retry=document.getElementById('bootRetry');if(retry)retry.hidden=false;
+   return;
+  }
+  var progress=Math.min(90,Math.max(5,Math.floor(elapsed/190)));
+  bar.style.width=progress+'%';pct.textContent=progress+'%';
+ }
+ tick=setInterval(draw,300);
+ document.addEventListener('DOMContentLoaded',draw);
+ window.addEventListener('error',function(e){
+  if(window.__mapReady)return;
+  var label=document.getElementById('bootText');
+  if(label)label.textContent='Falha ao carregar um recurso do jogo. Verifique a conexão.';
+ });
+})();
+</script><script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script><style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#e9f0ff;background:#07111f}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 60% 0%,#183252,#07111f 65%);min-height:100vh}button,select{font:inherit}button{cursor:pointer;border:1px solid #344968;background:#183151;color:#e9f0ff;border-radius:10px;padding:11px 15px;font-weight:700}button:hover{background:#284d77}button:disabled{opacity:.4;cursor:default}.primary{background:#e6ad47;color:#101c2b;border:0}.primary:hover{background:#f7c66d}.shell{max-width:1600px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}h1{margin:0;font-size:clamp(22px,3vw,36px);letter-spacing:.07em}h1 span{color:#efbd5e}.sub{color:#92a9c4;font-size:13px;margin-top:5px}.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{padding:10px 16px;background:#101f33;border:1px solid #29405a;border-radius:12px;text-align:center}.stat strong{display:block;font-size:23px;color:#f6c46b}.stat small{color:#a6b6cc}.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px}.panel{background:#0d1b2ddf;border:1px solid #29405a;border-radius:16px;overflow:hidden}.maptop{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 15px;border-bottom:1px solid #29405a;flex-wrap:wrap}.maptop b{font-size:14px}.mapwrap{position:relative;background:#10283f;min-height:300px}#map{display:block;width:100%;height:auto;touch-action:none}.country{stroke:#c6d8e7;stroke-width:.14;vector-effect:non-scaling-stroke;cursor:pointer}.country:hover{stroke:#ffda85;stroke-width:.45}.country.attacker{stroke:#ffd05b;stroke-width:.7}.country.defender{stroke:#fa6666;stroke-width:.7}.ocean{fill:#112d48}.maphelp{position:absolute;left:12px;bottom:12px;background:#07111fcc;color:#c1d3e9;font-size:12px;padding:7px 10px;border-radius:8px;pointer-events:none}.controls{display:flex;flex-wrap:wrap;gap:8px;padding:13px;border-top:1px solid #29405a;align-items:center}.controls select{background:#142a45;color:#fff;border:1px solid #36516d;border-radius:8px;padding:10px}.side{display:flex;flex-direction:column;gap:14px}.section{padding:16px}.section h2{font-size:15px;margin:0 0 13px;color:#f1c675;letter-spacing:.06em}.combatants{display:grid;grid-template-columns:1fr 34px 1fr;align-items:center;gap:4px;text-align:center}.flag{font-size:37px}.combatants b{display:block;font-size:13px;min-height:34px}.combatants small{color:#a9bed5}.vs{color:#f6c46b;font-weight:900}.compass{width:175px;height:175px;display:block;margin:8px auto}.dir{font-weight:800;text-align:center;color:#f2c46b}.dice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.die{border:1px solid #4e6582;border-radius:12px;background:#162e4c;text-align:center;padding:12px}.die b{display:block;font-size:32px;color:#fff}.die small{color:#aac2d9}.result{text-align:center;min-height:48px;color:#f6ca73;font-weight:800}.leader{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px}.leader .place{color:#8da6c4;width:22px}.leader .name{flex:1}.leader .value{color:#f2c46b}.log{max-height:235px;overflow:auto;font-size:12px;line-height:1.5;color:#c5d3e5}.log div{padding:7px 0;border-bottom:1px solid #25384d}.status{font-size:12px;color:#9fb4ce;padding:8px 14px}.tooltip{position:fixed;z-index:10;pointer-events:none;background:#07101df5;border:1px solid #56718d;padding:9px 12px;border-radius:10px;font-size:12px;display:none;max-width:240px}.footer{color:#8298b2;font-size:12px;text-align:center;margin:16px 0}.loading{position:absolute;inset:0;display:grid;place-items:center;background:#10283fe8;z-index:3;text-align:center;padding:20px}.hidden{display:none!important}@media(max-width:900px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.side>.panel:last-child{grid-column:1/-1}}@media(max-width:520px){.shell{padding:10px}.side{display:flex}.stats{width:100%}.stat{flex:1;padding:8px}.controls button{flex:1}.maphelp{font-size:10px}.flag{font-size:30px}}
+
+/* Etapas cinematográficas */
+.stage-screen{position:fixed;inset:0;background:radial-gradient(circle at 50% 25%,#193b5a,#050c18 75%);z-index:50;display:none;align-items:center;justify-content:center;padding:18px;text-align:center;color:#f3f7ff}.stage-screen.active{display:flex}.stage-card{width:min(95vw,680px);padding:28px 16px;border:1px solid #38516c;border-radius:24px;background:#0b1829;box-shadow:0 30px 100px #0009}.stage-card h2{font-size:clamp(23px,5vw,38px);margin:12px}.stage-card p{color:#b9c8dc}.stage-flags{display:flex;align-items:center;justify-content:center;gap:clamp(15px,5vw,55px);margin:28px auto}.stage-flags img{width:clamp(90px,24vw,180px);height:clamp(65px,16vw,120px);object-fit:contain;border-radius:5px;filter:drop-shadow(0 8px 15px #0009)}.stage-flags b{display:block;margin-top:8px}.stage-compass{width:min(55vw,260px);height:min(55vw,260px);margin:20px auto;border:8px solid #bd9655;border-radius:50%;background:repeating-conic-gradient(from -22.5deg,#213c5a 0deg 45deg,#10243b 45deg 90deg);position:relative;box-shadow:0 0 40px #e6bd5830}.stage-compass .arrow{position:absolute;left:calc(50% - 8px);top:15%;height:70%;width:16px;background:linear-gradient(to bottom,#ffca5b 0 49%,#b9c4d2 50%);clip-path:polygon(50% 0,100% 45%,65% 50%,100% 95%,50% 100%,0 95%,35% 50%,0 45%);transform-origin:center;transition:transform 5s cubic-bezier(.12,.65,.15,1)}.stage-compass .north{position:absolute;top:3px;left:47%;font-weight:900}.stage-die{width:112px;height:112px;margin:14px auto;border-radius:22px;background:#f4f7ff;color:#13283e;font-size:70px;font-weight:900;display:grid;place-items:center;box-shadow:0 10px 28px #0008}.stage-die.rolling{animation:shake .13s infinite alternate}@keyframes shake{from{transform:rotate(-8deg) scale(.95)}to{transform:rotate(8deg) scale(1.05)}}.stage-sub{font-size:20px;font-weight:700;color:#e6bd58!important}.country.scan{stroke:#030406!important;stroke-width:1.6!important;filter:drop-shadow(0 0 4px #000);animation:scanpulse .22s alternate infinite}.country.targeted{stroke:#050506!important;stroke-width:1.9!important;filter:drop-shadow(0 0 5px #000)}@keyframes scanpulse{to{stroke-width:2.3}}.mapwrap{min-height:300px}.stage-status{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:8;padding:10px 20px;border:2px solid #020304;background:#f3f7ff;color:#111;font-weight:900;border-radius:12px;box-shadow:0 5px 20px #0008;display:none;max-width:90%;text-align:center}.stage-status.show{display:block}
+
+/* O mapa ocupa toda a primeira tela; ranking e histórico só aparecem no encerramento. */
+.shell{max-width:none;padding:12px 16px}.layout{display:block}.layout>.panel{width:100%}.side{display:none!important}.mapwrap{min-height:0}#map{width:100%;max-height:calc(100vh - 215px);min-height:380px}.maptop .sub{display:none}.top{margin-bottom:8px}.footer{margin:8px 0}.controls{justify-content:center}.stage-card{width:min(95vw,760px)}
+@media(max-width:600px){.shell{padding:6px}.top{padding:8px}.top .stats{display:none}#map{min-height:320px;max-height:calc(100vh - 235px)}.controls{gap:5px;padding:8px}.controls button{padding:9px}.maptop{padding:8px}}
+
+/* Controles reorganizados para telas pequenas e grandes. */
+.controls{display:flex;flex-direction:column;gap:13px;padding:18px 16px;background:linear-gradient(180deg,#101f33,#0b192b);align-items:stretch}
+.control-actions{display:grid;grid-template-columns:1.2fr 1.2fr 1fr;gap:10px;width:min(100%,720px);margin:0 auto}
+.control-actions button{min-height:52px;padding:11px 10px;border-radius:13px;font-size:14px;line-height:1.3;box-shadow:0 3px 10px #0002;white-space:normal}
+.control-actions .primary{background:#eab348;color:#162132}
+.speed-control{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;font-size:14px;color:#afc3dd}
+.speed-control label{font-weight:600}
+.speed-control select{width:175px;max-width:50%;padding:11px 14px;border-radius:12px;font-weight:650;min-height:45px}
+@media(max-width:600px){.controls{padding:14px 10px;gap:13px}.control-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.control-actions button{font-size:13px;min-height:60px;padding:8px 5px}.speed-control{justify-content:space-between;gap:8px;padding:0 5px}.speed-control label{font-size:13px}.speed-control select{width:145px;max-width:52%}}
+
+.maptop-actions{display:flex;gap:8px;align-items:center}.maptop-actions button{padding:9px 12px}.country.targeted{stroke:#000!important;stroke-width:1.9!important;filter:drop-shadow(0 0 4px #000)}.ranking-scroll{max-height:55vh;overflow-y:auto;text-align:left;margin:12px 0}.rank-row{font-size:14px;padding:9px;border-bottom:1px solid #29405a}.rank-row .value{white-space:nowrap}#rankingBtn{border-color:#9c7a3d;color:#f3d08b}@media(max-width:600px){.maptop-actions{gap:5px}.maptop-actions button{font-size:12px;padding:9px 8px}.maptop b{font-size:12px}}
+
+/* Ranking integrado abaixo do mapa, inclusive em telas pequenas */
+.rank-inline,.final-inline{padding:18px 15px 24px;border-top:1px solid #29425d;background:#0c1c30}
+.rank-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap}
+.rank-head h2{margin:0;font-size:19px;color:#f3c66b}.rank-head span{font-size:12px;color:#aebfd3}
+#rankInlineRows,.final-ranks{display:grid;grid-template-columns:repeat(auto-fit,minmax(265px,1fr));gap:5px 16px}
+.rank-entry{display:grid;grid-template-columns:32px 31px minmax(0,1fr) 78px;gap:7px;align-items:center;background:#152941;border:1px solid #27415d;border-radius:9px;padding:10px;font-size:13px}
+.rank-position{font-weight:700;color:#f2c56b}.rank-flag{font-size:22px}.rank-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rank-value{text-align:right;color:#c0d2e7;font-size:12px}
+.final-inline{text-align:center;padding:30px 15px}.final-inline[hidden],.rank-inline[hidden]{display:none!important}
+.champion-trophy{font-size:72px}.champion-flag{font-size:78px}.final-inline h2{color:#f2c56b;letter-spacing:2px}.final-inline h3{font-size:23px}.final-inline p{color:#b5c9df}.final-ranks{text-align:left;margin-top:18px}
+@media(max-width:600px){.rank-inline{padding:14px 9px}.rank-entry{padding:9px 8px}#rankInlineRows,.final-ranks{grid-template-columns:1fr}}
+
+.stage-die{cursor:pointer;user-select:none;touch-action:manipulation;border:4px solid #f0be5a;transition:transform .15s,box-shadow .15s}.stage-die:not(.rolling):active{transform:scale(.93)}.stage-die.rolling{pointer-events:none}.tap-instruction{font-weight:800;color:#f5d18b!important;font-size:17px}.stage-die:focus-visible{outline:4px solid white;outline-offset:5px}
+
+/* Escolha inicial de dados */
+.mode-overlay{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:18px;background:#040a15ef;backdrop-filter:blur(7px)}
+.mode-overlay[hidden]{display:none!important}.mode-card{width:min(100%,460px);padding:26px 20px;border:1px solid #3b5576;border-radius:22px;background:linear-gradient(145deg,#162d49,#0b182b);box-shadow:0 18px 70px #000b;text-align:center}.mode-card h2{font-size:26px;margin:0 0 8px;color:#f1c46b}.mode-card p{color:#b8c9df;line-height:1.5}.mode-options{display:grid;gap:12px;margin:23px 0}.mode-choice{width:100%;text-align:left;padding:16px;border:2px solid #385575;border-radius:14px;background:#122742;display:flex;align-items:center;gap:13px}.mode-choice .mode-icon{font-size:29px}.mode-choice strong{display:block;font-size:17px}.mode-choice small{display:block;font-weight:400;color:#b8c9df;margin-top:4px}.mode-choice.selected{border-color:#efbd5e;background:#263b52}.mode-confirm{width:100%;padding:15px;border-radius:12px}.mode-label{font-size:12px;color:#9db4d0}.mode-config{width:100%;margin-top:10px;font-size:13px}.stage-die.auto-die{cursor:default;border-color:#83b9e9}
+
+/* Loading screen + control layout */
+.dice-control{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 5px}
+.dice-control label{font-size:14px;color:#b8cce4;font-weight:700}
+.dice-control select{width:50%;min-width:140px;max-width:230px;background:#193450;color:#fff;border:1px solid #3b5576;border-radius:12px;padding:13px}
+.boot-screen{position:fixed;inset:0;z-index:500;background:radial-gradient(circle at 50% 30%,#183655,#060f1c 75%);display:flex;align-items:center;justify-content:center;padding:20px}
+.boot-screen.hidden{display:none!important}.boot-card{text-align:center;width:min(100%,410px);padding:30px 22px;border:1px solid #3d5876;border-radius:24px;background:#10223b;box-shadow:0 20px 70px #0008}
+.boot-globe{font-size:66px;animation:bootFloat 2.4s ease-in-out infinite}.boot-card h2{font-size:clamp(20px,5vw,29px);letter-spacing:.05em;margin:12px 0 24px}.boot-card h2 span{color:#efbd5e}.boot-card p{color:#d5e1ef}.boot-track{height:12px;background:#071320;border-radius:20px;overflow:hidden;margin:24px 0 8px;border:1px solid #36516d}.boot-bar{height:100%;width:0;background:linear-gradient(90deg,#e6ad47,#ffe29a);transition:width .35s ease;border-radius:20px}.boot-card small{color:#f4c66c;font-weight:800}.boot-card .boot-hint{font-size:12px;color:#8da6c4;line-height:1.5;margin-top:22px}.boot-card button{margin-top:14px}@keyframes bootFloat{50%{transform:translateY(-9px)}}
+
+/* Versão horizontal inspirada na prévia cinematográfica */
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{background:#06111f;color:#edf5ff}.shell{max-width:none;padding:10px}.top{background:#071625;border-bottom:1px solid #1d466d;padding:5px 10px;margin-bottom:10px;flex-wrap:nowrap}.top h1{font-size:clamp(17px,2.2vw,32px);white-space:nowrap}.top .sub{font-size:11px}.stats{display:none}.layout{grid-template-columns:minmax(0,1fr) minmax(260px,27%);gap:10px;align-items:start}.panel{background:linear-gradient(130deg,#081727,#102840);border:1px solid #286092;box-shadow:inset 0 0 22px #09264366;border-radius:13px}.maptop{display:none}.mapwrap{height:56vh;min-height:260px;overflow:hidden;background:radial-gradient(ellipse,#143452,#061a2d)}#map{height:100%;width:100%}.ocean{fill:#0b2740}.country{stroke:#a2b8ce;stroke-width:.25;fill:none!important}.country.targeted{stroke:#050505!important;stroke-width:2!important}.controls{padding:10px;gap:10px}.control-actions{display:flex;gap:8px;flex:1}.control-actions button{flex:1;min-width:0;padding:10px 7px}.dice-control,.speed-control{display:flex;gap:8px;align-items:center}.controls label{font-size:12px}.controls select{padding:9px}.side{gap:10px}.side .panel{padding:13px}.side .panel h2{color:#f0c66d}.compass{width:100px;height:100px}.section{padding:12px}.rank-inline{padding:12px}.rank-head h2{font-size:20px}.rank-entry{background:#112b47;border:1px solid #1d3e61;border-radius:7px;padding:6px}.rank-inline #rankInlineRows{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 8px}.rank-entry{display:grid;grid-template-columns:23px 25px minmax(0,1fr) auto;align-items:center;gap:3px}.rank-name{font-size:11px}.rank-value{font-size:10px}.rank-flag{font-size:18px}.final-inline{border:2px solid #e5b74e;background:linear-gradient(145deg,#2c1e0d,#091625);border-radius:14px;margin:10px;padding:16px}.share-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px}.share-actions button{padding:12px}.country.scan{stroke-width:1.4!important}.stage-screen{z-index:60}#landscapeButton{font-size:12px;padding:8px 12px;white-space:nowrap}.maphelp{font-size:10px}
+@media(max-width:900px) and (orientation:landscape){.shell{padding:5px}.top{margin-bottom:4px}.layout{grid-template-columns:minmax(0,1fr) 28%;gap:5px}.mapwrap{height:58vh;min-height:180px}.side{display:flex;flex-direction:column;gap:5px}.side .panel{padding:6px}.side .panel h2{font-size:11px;margin-bottom:5px}.side .panel:nth-child(n+2){display:none}.controls{padding:5px}.controls button{font-size:11px;padding:7px}.controls select{font-size:11px;padding:6px}.rank-inline #rankInlineRows{grid-template-columns:repeat(4,minmax(0,1fr))}.top h1{font-size:17px}.top .sub{display:none}}
+@media(max-width:900px) and (orientation:portrait){.layout{grid-template-columns:minmax(0,1fr) 31%}.side{display:flex;flex-direction:column}.side>.panel:not(:first-child){display:none}.side .panel{padding:7px}.side h2{font-size:11px}.combatants{grid-template-columns:1fr 15px 1fr}.flag{font-size:22px}.combatants b{font-size:10px}.dice{gap:3px}.die{padding:4px}.die b{font-size:20px}.mapwrap{height:48vh;min-height:240px}.rank-inline #rankInlineRows{grid-template-columns:repeat(2,minmax(0,1fr))}.controls{flex-wrap:wrap}.top h1{font-size:17px}.top .sub{font-size:10px}}
+@media(max-width:600px) and (orientation:portrait){.layout{grid-template-columns:1fr}.side{display:none}.mapwrap{height:53vh}.rank-inline #rankInlineRows{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* V14: mapa proporcional e retorno à orientação vertical */
+.mapwrap{height:43vh;min-height:220px;max-height:470px}
+#map{width:100%;height:100%;max-height:100%;object-fit:contain}
+@media(max-width:900px) and (orientation:landscape){.mapwrap{height:49vh;min-height:150px;max-height:360px}}
+@media(max-width:900px) and (orientation:portrait){.mapwrap{height:38vh;min-height:205px;max-height:410px}}
+@media(max-width:600px) and (orientation:portrait){.mapwrap{height:37vh;min-height:200px}}
+body.landscape-active .mapwrap{height:49vh;max-height:440px}
+#landscapeButton{min-width:125px}
+
+/* Fine borders and reliable tapping across the entire flag-filled country. */
+.country{stroke-width:.075!important;pointer-events:all;stroke:#b6c8d7}
+.country:hover{stroke-width:.16!important}
+.country.scan{stroke:#030303!important;stroke-width:.42!important;filter:none!important}
+.country.targeted{stroke:#000!important;stroke-width:.55!important;filter:none!important}
+@keyframes scanpulse{to{stroke-width:.58}}
+
+/* V16 — legible borders and compact horizontal presentation */
+.country{stroke:#b7c9d9!important;stroke-width:.30!important;pointer-events:all}
+.country.scan{stroke:#050505!important;stroke-width:1.25!important;filter:none}
+.country.targeted{stroke:#050505!important;stroke-width:1.45!important;filter:none}
+@keyframes scanpulse{to{stroke-width:1.5}}
+@media(orientation:landscape) and (max-height:650px){
+ .shell{padding:4px 7px}.top{padding:2px 5px;margin-bottom:4px}.top h1{font-size:16px}.top .sub{display:none}
+ .layout{grid-template-columns:minmax(0,1fr) minmax(180px,25%);gap:6px}
+ .mapwrap,body.landscape-active .mapwrap{height:49dvh!important;min-height:130px!important;max-height:290px!important}
+ .controls{padding:5px!important;gap:5px!important;flex-direction:row!important;flex-wrap:wrap!important}
+ .control-actions{flex:1 1 100%;gap:5px}.control-actions button{min-height:31px!important;padding:5px!important;font-size:11px!important}
+ .dice-control,.speed-control{flex:1;justify-content:space-between;padding:0!important}
+ .controls select{min-height:30px!important;padding:4px!important;font-size:11px!important}
+ .rank-inline{padding:6px}.rank-head h2{font-size:15px}.rank-entry{padding:3px}
+ .stage-screen{padding:5px!important;overflow:auto;align-items:center}
+ .stage-card{padding:9px 14px!important;width:min(92vw,550px)!important;max-height:94dvh;overflow:auto;border-radius:14px}
+ .stage-card h2{font-size:19px!important;margin:3px!important}.stage-card p{margin:5px!important;font-size:12px}
+ .stage-compass{width:min(30dvh,135px)!important;height:min(30dvh,135px)!important;margin:7px auto!important;border-width:4px!important}
+ .stage-flags{margin:5px auto!important;gap:12px!important}.stage-flags img{width:min(23vw,95px)!important;height:min(16vh,60px)!important}
+ .stage-die{width:65px!important;height:65px!important;font-size:40px!important;margin:6px auto!important}
+ .stage-sub{font-size:13px!important}.side .panel{padding:6px}.section{padding:6px}
+}
+/* V18: mapa centralizável sem opção de rotação forçada */
+.mapwrap{position:relative}
+#resetZoom{position:absolute;right:12px;top:12px;z-index:12;background:#183756eF;color:#fff;border:1px solid #5680a4;border-radius:12px;padding:9px 12px;font-size:12px;box-shadow:0 2px 10px #0018;cursor:pointer;min-height:36px}
+#resetZoom:active{transform:scale(.97)}
+@media(max-width:600px){#resetZoom{right:9px;top:9px;padding:8px 10px;font-size:11px}}
+/* V19: contornos ligeiramente mais visíveis */
+.country{stroke-width:.39!important}
+.country.scan{stroke-width:1.48!important}
+.country.targeted{stroke-width:1.68!important}
+@keyframes scanpulse{to{stroke-width:1.72}}
+
+.dice-tray{display:flex;justify-content:center;align-items:center;gap:12px;margin:20px auto;flex-wrap:wrap}.dice-cube{display:grid;place-items:center;width:clamp(64px,19vw,94px);height:clamp(64px,19vw,94px);border:3px solid #edbe66;border-radius:16px;background:#f3f6ff;color:#152c44;font-size:clamp(38px,9vw,58px);font-weight:900;box-shadow:0 8px 18px #0007}.dice-cube.rolling{animation:shake .14s infinite alternate}.dice-cube.discarded{opacity:.35;text-decoration:line-through;border-color:#a4a7ad;transform:scale(.86)}
+
+/* V28 — duelo visual alinhado como o modelo de referência */
+.stage-card{width:min(96vw,610px)}
+.battle-head .stage-flags{margin:12px auto 8px;gap:clamp(12px,5vw,42px)}
+.battle-head .stage-flags img{width:clamp(84px,22vw,138px);height:clamp(55px,14vw,90px)}
+.battle-score{display:flex;align-items:center;justify-content:space-between;background:#071321;border:1px solid #2c4662;border-radius:11px;padding:9px 15px;font-size:17px;margin:12px 0}
+.battle-score>span:first-child{color:#f0c063}.battle-score>span:last-child{color:#83c5ff}
+.battle-score b{font-size:26px;margin:0 7px}.battle-score strong{color:#bac8da;font-size:11px;letter-spacing:.15em}
+.battle-grid{display:grid;grid-template-columns:minmax(0,1fr) 45px minmax(0,1fr);gap:6px;align-items:start}
+.battle-column{min-width:0}.dice-column-label{font-size:11px;font-weight:800;letter-spacing:.05em;color:#b9cde2;margin:0 0 8px}
+.battle-dice-list{display:flex;flex-direction:column;gap:8px;align-items:center}
+.battle-die{width:clamp(55px,14vw,74px);height:clamp(55px,14vw,74px);border-radius:13px;display:grid;place-items:center;font-size:36px;font-weight:900;box-shadow:inset 0 -6px 0 #0003,0 5px 12px #0005;transition:opacity .2s,transform .2s,border-color .2s}
+.battle-die.attack{background:#efbd5a;color:#17263c}.battle-die.defense{background:#78b8ed;color:#10263d}
+.battle-die.discarded{opacity:.27;text-decoration:line-through;filter:grayscale(1)}
+.battle-die.placeholder{visibility:hidden}.battle-die.compared{outline:2px solid #fff9;outline-offset:2px}
+.battle-die.won{box-shadow:0 0 0 3px #4ed398,0 0 18px #4ed39870}.battle-die.lost{opacity:.55}.battle-die.tied{box-shadow:0 0 0 3px #f0d17d}
+.battle-die.rolling{animation:shake .13s infinite alternate}
+.battle-middle{display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:28px;color:#9cacc1;font-weight:900}
+.battle-middle span{height:clamp(55px,14vw,74px);display:grid;place-items:center}
+.battle-turn{font-size:15px!important;font-weight:800;color:#f3f6fb!important;margin:12px 0 6px!important}
+@media(max-height:650px) and (orientation:landscape){.battle-die{width:40px;height:40px;font-size:23px}.battle-dice-list,.battle-middle{gap:4px}.battle-middle{padding-top:20px}.battle-middle span{height:40px}.battle-head .stage-flags img{height:36px;width:65px}.battle-head .stage-flags{margin:3px auto}.battle-score{margin:4px 0;padding:3px 10px}.battle-score b{font-size:18px}.dice-column-label{margin-bottom:4px;font-size:9px}}
+
+/* Menu principal e salvamento da versão 1.0 */
+.save-menu{position:fixed;inset:0;z-index:900;background:radial-gradient(ellipse at 50% 12%,#183e64,#07111f 70%);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.save-menu[hidden]{display:none!important}.save-card{width:min(100%,490px);border:1px solid #3b6185;border-radius:22px;padding:26px 20px;background:linear-gradient(160deg,#132d49,#081626);box-shadow:0 18px 70px #0009;text-align:center}
+.save-card .menu-globe{font-size:58px}.save-card h1{font-size:clamp(23px,6vw,34px);line-height:1.18;margin:12px 0 5px}.save-card h1 span{color:#eebd5e}.save-card p{color:#b3c7df;line-height:1.5}.save-actions{display:grid;gap:11px;margin:23px 0}.save-actions button{min-height:55px;font-size:17px;border-radius:13px}.save-actions button.primary{color:#152337;background:#eeb64b}.save-card input{display:block;width:100%;padding:14px;margin:15px 0;background:#091a2b;color:white;border:1px solid #6485a8;border-radius:11px;font-size:16px}.save-card input:focus{outline:2px solid #efc468}.save-back{background:transparent;border-color:#496584}.save-item{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#0e2339;border:1px solid #36516c;border-radius:11px;padding:11px;margin:9px 0;text-align:left}.save-item .save-title{font-weight:750;overflow-wrap:anywhere}.save-item small{display:block;color:#a8bfd8;margin-top:4px}.save-item button{flex-shrink:0}.help-entry{text-align:left;border-bottom:1px solid #38516c;padding:12px 0}.help-entry strong{color:#f0c56e}.help-entry p{margin:5px 0;font-size:14px}.save-game-button{display:block;width:100%;margin-top:12px;border:1px solid #a07b3f;background:#182f49;color:#f3cf88}.save-message{font-size:13px;color:#ffd58c;min-height:18px}.save-menu .menu-quiet{font-size:12px;color:#90a8c2}
+</style><style>
+.audio-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 2px;padding:12px;border:1px solid #3d5978;border-radius:12px;background:#0c2238;text-align:left}.audio-row button{min-width:125px}.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0}.backup-actions button{font-size:14px;min-height:48px}.backup-note{font-size:12px!important;color:#a9bdd5!important}.final-navigation{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0 20px}.final-navigation button{min-width:160px}.music-game-control{display:flex;justify-content:flex-end;padding:0 13px 8px}.music-game-control button{font-size:12px;padding:8px 12px}@media(max-width:400px){.backup-actions{grid-template-columns:1fr}}
+ 
+#mbStudioSplash{position:fixed;inset:0;z-index:999999;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .35s ease}
+#mbStudioSplash .mb-brand{font-family:Arial,sans-serif;font-size:clamp(32px,8vw,64px);font-weight:900;letter-spacing:.12em}
+#mbStudioSplash .mb-sub{font:600 clamp(15px,4vw,25px) Arial,sans-serif;letter-spacing:.4em;margin-top:12px}
+#mbStudioSplash.fade-out{opacity:0;pointer-events:none}
+</style></head><body><div id="mbStudioSplash" style="display:none" aria-label="Apresentação M.B. Studios"><div><div class="mb-brand">M.B.</div><div class="mb-sub">STUDIOS</div></div></div><div class="shell"><header class="top"><div><h1>LAST <span>NATION</span> STANDING</h1><div class="sub">195 nações • Sorteio, bússola e dados</div></div><div class="stats"><div class="stat"><strong id="alive">195</strong><small>Nações vivas</small></div><div class="stat"><strong id="round">0</strong><small>Batalhas</small></div><div class="stat"><strong id="territories">195</strong><small>Territórios</small></div></div></header><main class="layout"><section class="panel"><div class="maptop"><b>🌍 MAPA DE CONQUISTAS</b><span class="sub">Clique em um território para ver sua nação</span></div><div class="mapwrap"><button id="resetZoom" type="button" title="Centralizar mapa">⌖ Centralizar mapa</button><div class="stage-status" id="mapStage"></div><svg id="map" viewBox="0 0 1000 535" aria-label="Mapa mundial com bandeiras"></svg><div class="maphelp">Arraste para mover • Role/pinça para zoom</div></div><div class="controls"><div class="control-actions"><button class="primary" id="start">▶ Automático</button><button id="step">⚔ Começar batalha</button><button id="reset">↺ Reiniciar</button></div><div class="speed-control"><label for="speed">⚙ Velocidade da simulação</label><select id="speed"><option value="8000" selected>Devagar</option><option value="4000">Normal</option><option value="1700">Rápido</option><option value="650">Bem rápido</option></select></div></div><div class="music-game-control"><button id="gameMusicToggle" type="button">♫ Música: desligada</button></div><div style="padding:0 13px 10px"><button id="returnMenu" class="save-game-button" type="button">☰ Menu principal · Salvar e sair</button></div><div class="status" id="status">Preparando o mundo…</div><section class="rank-inline" id="rankInline"><div class="rank-head"><h2>🏆 Ranking de países</h2><span id="rankCaption">195 nações participantes</span></div><div id="rankInlineRows"></div></section><section class="final-inline" id="finalInline" hidden></section></section><aside class="side"><section class="panel section"><h2>⚔ BATALHA ATUAL</h2><div class="combatants"><div><div class="flag" id="af">🌎</div><b id="an">Aguardando</b><small id="ap">—</small></div><div class="vs">VS</div><div><div class="flag" id="df">🌍</div><b id="dn">Aguardando</b><small id="dp">—</small></div></div><div class="dice"><div class="die"><small>Atacante: 3 dados (descarta 1)</small><b id="ad">—</b></div><div class="die"><small>Defensor: 2 dados (duelo por pares)</small><b id="dd">—</b></div></div><div class="result" id="result">Inicie a simulação</div></section><section class="panel section"><h2>🧭 BÚSSOLA DO ATAQUE</h2><svg class="compass" viewBox="0 0 200 200"><circle cx="100" cy="100" r="77" fill="#102841" stroke="#506d89" stroke-width="2"/><circle cx="100" cy="100" r="59" fill="none" stroke="#3e5a76" stroke-dasharray="3 5"/><g fill="#e1e9f5" font-size="14" font-weight="bold" text-anchor="middle"><text x="100" y="16">N</text><text x="161" y="41">NE</text><text x="188" y="105">L</text><text x="163" y="169">SE</text><text x="100" y="196">S</text><text x="37" y="169">SO</text><text x="12" y="105">O</text><text x="38" y="41">NO</text></g><g id="needle"><path d="M100 29L115 109L100 99L85 109Z" fill="#f2b94e"/><path d="M100 171L85 91L100 101L115 91Z" fill="#7f9ab8"/></g><circle cx="100" cy="100" r="9" fill="#f7d68c"/></svg><div class="dir" id="direction">Aguardando direção</div></section><section class="panel section"><h2>🏆 RANKING DE IMPÉRIOS</h2><div id="leaders"></div><h2 style="margin-top:18px">📜 HISTÓRICO</h2><div class="log" id="log"><div>O mundo está pronto para começar.</div></div></section></aside></main><div class="footer">Simulação fictícia de estratégia. Bandeiras obtidas do FlagCDN; geometria do mapa World Atlas. Pequenos países podem precisar de zoom.</div></div><div class="save-menu" id="saveMenu" role="dialog" aria-modal="true" aria-label="Menu principal"><div class="save-card"><div class="menu-globe">🌍</div><h1>LAST <span>NATION</span> STANDING</h1><p>Conquiste o mundo, uma batalha por vez.</p><div id="saveMenuContent"></div><input id="backupImportFile" type="file" accept=".json,application/json" style="display:none" aria-label="Importar backup"><div class="save-message" id="saveMessage" aria-live="polite"></div><div class="menu-quiet">Seu progresso é salvo automaticamente neste dispositivo.</div></div></div><div class="tooltip" id="tooltip"></div><div class="stage-screen" id="stageScreen"><div class="stage-card" id="stageCard"></div></div><script>
+
+function startBoot(){}
+function finishBoot(){window.__mapReady=true;}
+function failBoot(){$('status').textContent='Não foi possível abrir o mapa. Confira a internet e atualize a página.';}
+const COUNTRIES=[{"iso": "af", "num": "004", "name": "Afeganistão"}, {"iso": "al", "num": "008", "name": "Albânia"}, {"iso": "dz", "num": "012", "name": "Argélia"}, {"iso": "ad", "num": "020", "name": "Andorra"}, {"iso": "ao", "num": "024", "name": "Angola"}, {"iso": "ag", "num": "028", "name": "Antigua and Barbuda"}, {"iso": "ar", "num": "032", "name": "Argentina"}, {"iso": "am", "num": "051", "name": "Armênia"}, {"iso": "au", "num": "036", "name": "Austrália"}, {"iso": "at", "num": "040", "name": "Áustria"}, {"iso": "az", "num": "031", "name": "Azerbaijão"}, {"iso": "bs", "num": "044", "name": "Bahamas"}, {"iso": "bh", "num": "048", "name": "Bahrain"}, {"iso": "bd", "num": "050", "name": "Bangladesh"}, {"iso": "bb", "num": "052", "name": "Barbados"}, {"iso": "by", "num": "112", "name": "Belarus"}, {"iso": "be", "num": "056", "name": "Bélgica"}, {"iso": "bz", "num": "084", "name": "Belize"}, {"iso": "bj", "num": "204", "name": "Benin"}, {"iso": "bt", "num": "064", "name": "Bhutan"}, {"iso": "bo", "num": "068", "name": "Bolívia"}, {"iso": "ba", "num": "070", "name": "Bósnia e Herzegovina"}, {"iso": "bw", "num": "072", "name": "Botsuana"}, {"iso": "br", "num": "076", "name": "Brasil"}, {"iso": "bn", "num": "096", "name": "Brunei Darussalam"}, {"iso": "bg", "num": "100", "name": "Bulgária"}, {"iso": "bf", "num": "854", "name": "Burkina Faso"}, {"iso": "bi", "num": "108", "name": "Burundi"}, {"iso": "cv", "num": "132", "name": "Cabo Verde"}, {"iso": "kh", "num": "116", "name": "Camboja"}, {"iso": "cm", "num": "120", "name": "Camarões"}, {"iso": "ca", "num": "124", "name": "Canadá"}, {"iso": "cf", "num": "140", "name": "Central African Republic"}, {"iso": "td", "num": "148", "name": "Chad"}, {"iso": "cl", "num": "152", "name": "Chile"}, {"iso": "cn", "num": "156", "name": "China"}, {"iso": "co", "num": "170", "name": "Colômbia"}, {"iso": "km", "num": "174", "name": "Comoros"}, {"iso": "cg", "num": "178", "name": "Congo"}, {"iso": "cd", "num": "180", "name": "RD Congo"}, {"iso": "cr", "num": "188", "name": "Costa Rica"}, {"iso": "ci", "num": "384", "name": "Costa do Marfim"}, {"iso": "hr", "num": "191", "name": "Croácia"}, {"iso": "cu", "num": "192", "name": "Cuba"}, {"iso": "cy", "num": "196", "name": "Chipre"}, {"iso": "cz", "num": "203", "name": "Tchéquia"}, {"iso": "dk", "num": "208", "name": "Dinamarca"}, {"iso": "dj", "num": "262", "name": "Djibouti"}, {"iso": "dm", "num": "212", "name": "Dominica"}, {"iso": "do", "num": "214", "name": "Dominican Republic"}, {"iso": "ec", "num": "218", "name": "Equador"}, {"iso": "eg", "num": "818", "name": "Egito"}, {"iso": "sv", "num": "222", "name": "El Salvador"}, {"iso": "gq", "num": "226", "name": "Equatorial Guinea"}, {"iso": "er", "num": "232", "name": "Eritrea"}, {"iso": "ee", "num": "233", "name": "Estônia"}, {"iso": "sz", "num": "748", "name": "Eswatini"}, {"iso": "et", "num": "231", "name": "Etiópia"}, {"iso": "fj", "num": "242", "name": "Fiji"}, {"iso": "fi", "num": "246", "name": "Finlândia"}, {"iso": "fr", "num": "250", "name": "França"}, {"iso": "ga", "num": "266", "name": "Gabon"}, {"iso": "gm", "num": "270", "name": "Gambia"}, {"iso": "ge", "num": "268", "name": "Geórgia"}, {"iso": "de", "num": "276", "name": "Alemanha"}, {"iso": "gh", "num": "288", "name": "Gana"}, {"iso": "gr", "num": "300", "name": "Grécia"}, {"iso": "gd", "num": "308", "name": "Grenada"}, {"iso": "gt", "num": "320", "name": "Guatemala"}, {"iso": "gn", "num": "324", "name": "Guinea"}, {"iso": "gw", "num": "624", "name": "Guinea-Bissau"}, {"iso": "gy", "num": "328", "name": "Guyana"}, {"iso": "ht", "num": "332", "name": "Haiti"}, {"iso": "hn", "num": "340", "name": "Honduras"}, {"iso": "hu", "num": "348", "name": "Hungria"}, {"iso": "is", "num": "352", "name": "Islândia"}, {"iso": "in", "num": "356", "name": "Índia"}, {"iso": "id", "num": "360", "name": "Indonésia"}, {"iso": "ir", "num": "364", "name": "Irã"}, {"iso": "iq", "num": "368", "name": "Iraque"}, {"iso": "ie", "num": "372", "name": "Irlanda"}, {"iso": "il", "num": "376", "name": "Israel"}, {"iso": "it", "num": "380", "name": "Itália"}, {"iso": "jm", "num": "388", "name": "Jamaica"}, {"iso": "jp", "num": "392", "name": "Japão"}, {"iso": "jo", "num": "400", "name": "Jordânia"}, {"iso": "kz", "num": "398", "name": "Cazaquistão"}, {"iso": "ke", "num": "404", "name": "Quênia"}, {"iso": "ki", "num": "296", "name": "Kiribati"}, {"iso": "kp", "num": "408", "name": "Coreia do Norte"}, {"iso": "kr", "num": "410", "name": "Coreia do Sul"}, {"iso": "kw", "num": "414", "name": "Kuwait"}, {"iso": "kg", "num": "417", "name": "Kyrgyzstan"}, {"iso": "la", "num": "418", "name": "Laos"}, {"iso": "lv", "num": "428", "name": "Letônia"}, {"iso": "lb", "num": "422", "name": "Líbano"}, {"iso": "ls", "num": "426", "name": "Lesotho"}, {"iso": "lr", "num": "430", "name": "Liberia"}, {"iso": "ly", "num": "434", "name": "Líbia"}, {"iso": "li", "num": "438", "name": "Liechtenstein"}, {"iso": "lt", "num": "440", "name": "Lituânia"}, {"iso": "lu", "num": "442", "name": "Luxemburgo"}, {"iso": "mg", "num": "450", "name": "Madagascar"}, {"iso": "mw", "num": "454", "name": "Malawi"}, {"iso": "my", "num": "458", "name": "Malásia"}, {"iso": "mv", "num": "462", "name": "Maldives"}, {"iso": "ml", "num": "466", "name": "Mali"}, {"iso": "mt", "num": "470", "name": "Malta"}, {"iso": "mh", "num": "584", "name": "Marshall Islands"}, {"iso": "mr", "num": "478", "name": "Mauritania"}, {"iso": "mu", "num": "480", "name": "Mauritius"}, {"iso": "mx", "num": "484", "name": "México"}, {"iso": "fm", "num": "583", "name": "Micronesia, Federated States of"}, {"iso": "md", "num": "498", "name": "Moldávia"}, {"iso": "mc", "num": "492", "name": "Mônaco"}, {"iso": "mn", "num": "496", "name": "Mongólia"}, {"iso": "me", "num": "499", "name": "Montenegro"}, {"iso": "ma", "num": "504", "name": "Marrocos"}, {"iso": "mz", "num": "508", "name": "Moçambique"}, {"iso": "mm", "num": "104", "name": "Mianmar"}, {"iso": "na", "num": "516", "name": "Namíbia"}, {"iso": "nr", "num": "520", "name": "Nauru"}, {"iso": "np", "num": "524", "name": "Nepal"}, {"iso": "nl", "num": "528", "name": "Países Baixos"}, {"iso": "nz", "num": "554", "name": "Nova Zelândia"}, {"iso": "ni", "num": "558", "name": "Nicaragua"}, {"iso": "ne", "num": "562", "name": "Niger"}, {"iso": "ng", "num": "566", "name": "Nigéria"}, {"iso": "mk", "num": "807", "name": "Macedônia do Norte"}, {"iso": "no", "num": "578", "name": "Noruega"}, {"iso": "om", "num": "512", "name": "Omã"}, {"iso": "pk", "num": "586", "name": "Paquistão"}, {"iso": "pw", "num": "585", "name": "Palau"}, {"iso": "pa", "num": "591", "name": "Panama"}, {"iso": "pg", "num": "598", "name": "Papua New Guinea"}, {"iso": "py", "num": "600", "name": "Paraguai"}, {"iso": "pe", "num": "604", "name": "Peru"}, {"iso": "ph", "num": "608", "name": "Filipinas"}, {"iso": "pl", "num": "616", "name": "Polônia"}, {"iso": "pt", "num": "620", "name": "Portugal"}, {"iso": "qa", "num": "634", "name": "Catar"}, {"iso": "ro", "num": "642", "name": "Romênia"}, {"iso": "ru", "num": "643", "name": "Rússia"}, {"iso": "rw", "num": "646", "name": "Rwanda"}, {"iso": "kn", "num": "659", "name": "Saint Kitts and Nevis"}, {"iso": "lc", "num": "662", "name": "Saint Lucia"}, {"iso": "vc", "num": "670", "name": "Saint Vincent and the Grenadines"}, {"iso": "ws", "num": "882", "name": "Samoa"}, {"iso": "sm", "num": "674", "name": "San Marino"}, {"iso": "st", "num": "678", "name": "Sao Tome and Principe"}, {"iso": "sa", "num": "682", "name": "Arábia Saudita"}, {"iso": "sn", "num": "686", "name": "Senegal"}, {"iso": "rs", "num": "688", "name": "Sérvia"}, {"iso": "sc", "num": "690", "name": "Seychelles"}, {"iso": "sl", "num": "694", "name": "Sierra Leone"}, {"iso": "sg", "num": "702", "name": "Singapura"}, {"iso": "sk", "num": "703", "name": "Eslováquia"}, {"iso": "si", "num": "705", "name": "Eslovênia"}, {"iso": "sb", "num": "090", "name": "Solomon Islands"}, {"iso": "so", "num": "706", "name": "Somália"}, {"iso": "za", "num": "710", "name": "África do Sul"}, {"iso": "ss", "num": "728", "name": "Sudão do Sul"}, {"iso": "es", "num": "724", "name": "Espanha"}, {"iso": "lk", "num": "144", "name": "Sri Lanka"}, {"iso": "sd", "num": "729", "name": "Sudão"}, {"iso": "sr", "num": "740", "name": "Suriname"}, {"iso": "se", "num": "752", "name": "Suécia"}, {"iso": "ch", "num": "756", "name": "Suíça"}, {"iso": "sy", "num": "760", "name": "Síria"}, {"iso": "tj", "num": "762", "name": "Tajikistan"}, {"iso": "tz", "num": "834", "name": "Tanzânia"}, {"iso": "th", "num": "764", "name": "Tailândia"}, {"iso": "tl", "num": "626", "name": "Timor-Leste"}, {"iso": "tg", "num": "768", "name": "Togo"}, {"iso": "to", "num": "776", "name": "Tonga"}, {"iso": "tt", "num": "780", "name": "Trinidad and Tobago"}, {"iso": "tn", "num": "788", "name": "Tunísia"}, {"iso": "tr", "num": "792", "name": "Turquia"}, {"iso": "tm", "num": "795", "name": "Turkmenistan"}, {"iso": "tv", "num": "798", "name": "Tuvalu"}, {"iso": "ug", "num": "800", "name": "Uganda"}, {"iso": "ua", "num": "804", "name": "Ucrânia"}, {"iso": "ae", "num": "784", "name": "Emirados Árabes Unidos"}, {"iso": "gb", "num": "826", "name": "Reino Unido"}, {"iso": "us", "num": "840", "name": "Estados Unidos"}, {"iso": "uy", "num": "858", "name": "Uruguai"}, {"iso": "uz", "num": "860", "name": "Uzbequistão"}, {"iso": "vu", "num": "548", "name": "Vanuatu"}, {"iso": "va", "num": "336", "name": "Vaticano"}, {"iso": "ve", "num": "862", "name": "Venezuela"}, {"iso": "vn", "num": "704", "name": "Vietnã"}, {"iso": "ye", "num": "887", "name": "Iêmen"}, {"iso": "zm", "num": "894", "name": "Zâmbia"}, {"iso": "zw", "num": "716", "name": "Zimbábue"}, {"iso": "ps", "num": "275", "name": "Palestina"}];
+const $=id=>document.getElementById(id);
+const byNum=new Map(COUNTRIES.map(c=>[String(+c.num),c]));
+const byIso=new Map(COUNTRIES.map(c=>[c.iso,c]));
+const dirs=['Norte','Nordeste','Leste','Sudeste','Sul','Sudoeste','Oeste','Noroeste'];
+const flag=iso=>{const s=iso.toUpperCase();return [...s].map(c=>String.fromCodePoint(c.charCodeAt(0)+127397)).join('')};
+const rand=n=>Math.floor(Math.random()*n);
+let countries=[],features=[],paths,projection,geoPath,zoom,svg,g,playing=false,timer=null,round=0,selected=null,initialized=false;
+const state=new Map();
+let diceMode='automatico';
+// Ordem cronológica dos países eliminados, do primeiro ao último.
+let eliminationOrder=[];
+function fresh(){sequence++;busy=false;hideStage();clearMapMessage();state.clear();eliminationOrder=[];for(const c of COUNTRIES)state.set(c.iso,{owner:c.iso,power:10+rand(91),score:0,wins:0,territories:1});round=0;playing=false;clearTimeout(timer);$('start').textContent='▶ Automático';$('step').textContent='⚔ Começar batalha';$('log').innerHTML='<div>Nova simulação iniciada.</div>';for(const id of ['ad','dd'])$(id).textContent='—';$('result').textContent='Pronto para a primeira batalha';$('direction').textContent='Aguardando direção';$('needle').setAttribute('transform','rotate(0 100 100)');$('an').textContent='Aguardando';$('dn').textContent='Aguardando';$('af').textContent='🌎';$('df').textContent='🌍';$('ap').textContent='—';$('dp').textContent='—';selected=null;clearBattleOutline();refresh();if(window.applyEmbeddedFlags)window.applyEmbeddedFlags();}
+function living(){return COUNTRIES.filter(c=>state.get(c.iso).owner===c.iso)}
+function ownedBy(iso){return COUNTRIES.filter(c=>state.get(c.iso).owner===iso)}
+function normalize(lon){return ((lon+540)%360)-180}
+function bearing(from,to){const a=from*Math.PI/180,b=to*Math.PI/180;return [Math.sin(b-a),Math.cos(b-a)]}
+// Real land adjacency comes from shared arcs in the world-atlas TopoJSON.
+let borderNeighbors=new Map();
+function chooseTarget(attacker,forcedDirection=null){
+ const territory=ownedBy(attacker.iso);
+ const direction=forcedDirection===null?rand(8):forcedDirection,angle=direction*45;
+ const sector=[];
+ const pushCandidate=(from,to,neighbor)=>{
+  if(!from.center||!to.center||state.get(to.iso).owner===attacker.iso)return;
+  const dlon=normalize(to.center[0]-from.center[0])*Math.cos((to.center[1]+from.center[1])*Math.PI/360);
+  const dlat=to.center[1]-from.center[1];
+  const dist=Math.hypot(dlon,dlat);if(dist<.001)return;
+  const deg=(Math.atan2(dlon,dlat)*180/Math.PI+360)%360;
+  const diff=Math.abs(((deg-angle+540)%360)-180);
+  const tolerance=direction%2===0?22.5:22.5;
+  if(diff<=tolerance)sector.push({country:to,dist,neighbor,from:from.iso,actualAngle:deg});
+ };
+ // Primeiro avalia SOMENTE adversários que compartilham uma fronteira terrestre.
+ const adjacent=[];
+ const seen=new Set();
+ for(const t of territory){
+  for(const iso of borderNeighbors.get(t.iso)||[]){
+   const c=byIso.get(iso);
+   if(!c||state.get(c.iso).owner===attacker.iso)continue;
+   adjacent.push({from:t,to:c});
+   pushCandidate(t,c,true);
+  }
+ }
+ if(sector.length){
+  // Prioriza o território fisicamente mais próximo, sem saltar sobre vizinhos.
+  sector.sort((a,b)=>a.dist-b.dist);
+  const closest=sector[0].dist;
+  const choices=sector.filter(c=>c.dist<=closest*1.12+.15);
+  return {target:choices[rand(choices.length)].country,direction,approx:false};
+ }
+ // Havendo vizinhos inimigos, NÃO é permitido saltá-los para atacar um país distante.
+ // A bússola será sorteada novamente até apontar para uma fronteira válida.
+ if(adjacent.length)return {target:null,direction,approx:false,needsReroll:true};
+ // Apenas ilhas e impérios sem fronteiras terrestres inimigas podem atacar pelo mar.
+ const enemies=COUNTRIES.filter(c=>state.get(c.iso).owner!==attacker.iso && c.center);
+ for(const t of territory)for(const e of enemies)pushCandidate(t,e,false);
+ sector.sort((a,b)=>a.dist-b.dist);
+ if(sector.length){const closest=sector[0].dist;const shortlist=sector.filter(c=>c.dist<=closest*1.1+.15).slice(0,4);return {target:shortlist[rand(shortlist.length)].country,direction,approx:true}}
+ return {target:null,direction,approx:true,needsReroll:true};
+}
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+let sequence=0,busy=false;
+const showStage=html=>{$('stageCard').innerHTML=html;$('stageScreen').classList.add('active')};
+const hideStage=()=>{$('stageScreen').classList.remove('active')};
+function mapMessage(message){$('mapStage').textContent=message;$('mapStage').classList.add('show')}
+function clearMapMessage(){$('mapStage').classList.remove('show')}
+function outline(iso,cls='scan'){if(!paths)return;paths.classed('scan',false);paths.filter(d=>d.country.iso===iso).classed(cls,true).raise()}
+function battleOutline(attackerIso,defenderIso){if(!paths)return;paths.classed('scan',false).classed('targeted',false);paths.filter(d=>state.get(d.country.iso)?.owner===attackerIso||state.get(d.country.iso)?.owner===defenderIso).classed('targeted',true).raise()}
+function clearBattleOutline(){if(paths)paths.classed('scan',false).classed('targeted',false)}
+// Aproxima a câmera do território escolhido sem perder os controles de arrastar e zoom.
+function focusOnNation(iso, duration=1400){
+ if(!initialized||!svg||!zoom||!geoPath)return Promise.resolve();
+ const lands=features.filter(f=>state.get(f.country.iso)?.owner===iso);
+ if(!lands.length){const c=byIso.get(iso);if(!c?.center)return Promise.resolve();const pt=projection(c.center);if(!pt)return Promise.resolve();return animateCamera(pt[0],pt[1],8,duration)}
+ let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+ for(const f of lands){const b=geoPath.bounds(f);minX=Math.min(minX,b[0][0]);minY=Math.min(minY,b[0][1]);maxX=Math.max(maxX,b[1][0]);maxY=Math.max(maxY,b[1][1])}
+ if(!Number.isFinite(minX))return Promise.resolve();
+ const w=Math.max(8,maxX-minX),h=Math.max(8,maxY-minY);
+ // Mantém 20% de margem horizontal e vertical, inclusive nos países pequenos.
+ // A câmera não pode ampliar mais do que o necessário para caber o país inteiro.
+ const scale=Math.max(1,Math.min(17,760/w,390/h));
+ return animateCamera((minX+maxX)/2,(minY+maxY)/2,scale,duration);
+}
+function animateCamera(x,y,k,duration){
+ const transform=d3.zoomIdentity.translate(500-k*x,267.5-k*y).scale(k);
+ return new Promise(resolve=>{svg.transition().duration(duration).ease(d3.easeCubicInOut).call(zoom.transform,transform).on('end interrupt',resolve)});
+}
+function resetCamera(duration=900){if(!svg||!zoom)return Promise.resolve();return new Promise(resolve=>{svg.transition().duration(duration).call(zoom.transform,d3.zoomIdentity).on('end interrupt',resolve)})}
+
+const flagPic=c=>`<img src="https://flagcdn.com/w320/${c.iso}.png" alt="Bandeira de ${c.name}">`;
+function duelFlags(a,d){return `<div class="stage-flags"><div>${flagPic(a)}<b>${a.name}</b></div><strong>VS</strong><div>${flagPic(d)}<b>${d.name}</b></div></div>`}
+async function cinematicBattle(){
+ if(!initialized||busy)return;const alive=living();if(alive.length<=1){endGame();return}
+ busy=true;const token=++sequence;
+ const speed=Number($('speed').value);const factor=speed>=8000?2.7:speed>=4000?1.6:speed>=1700?1:.32;
+ const delay=async(ms)=>{await wait(Math.max(120,ms*factor));return token===sequence};
+ const attacker=alive[rand(alive.length)];
+ // Passa por diferentes fronteiras com contorno preto antes de parar no atacante.
+ hideStage();clearBattleOutline();mapMessage('SORTEANDO PAÍS ATACANTE...');
+ const choices=Array.from({length:12},()=>alive[rand(alive.length)]).concat(attacker);
+ for(let i=0;i<choices.length;i++){const c=choices[i];outline(c.iso);window.LNSMusic?.effect('roulette',i);if(!await delay(300)){busy=false;return}}
+ window.LNSMusic?.effect('selected');outline(attacker.iso,'targeted');mapMessage(`${flag(attacker.iso)} ${attacker.name} FOI SELECIONADO!`);
+ await focusOnNation(attacker.iso,Math.round(1150*factor));
+ if(!await delay(1050)){busy=false;return}
+ // Bússola ocupa uma tela própria.
+ const firstDirection=rand(8);
+ let picked=chooseTarget(attacker,firstDirection);
+ if(!picked.target){
+  // Percorre todas as oito direções, sem repetir inadvertidamente uma direção anterior.
+  for(let offset=1;offset<8&&!picked.target;offset++)picked=chooseTarget(attacker,(firstDirection+offset)%8);
+ }
+ if(!picked.target){busy=false;hideStage();clearMapMessage();return}
+ const direction=picked.direction;
+ showStage(`<h2>🧭 BÚSSOLA DO ATAQUE</h2><p>${flag(attacker.iso)} ${attacker.name} está atacando</p><div class="stage-compass"><span class="north">N</span><div class="arrow" id="bigNeedle"></div></div><p class="stage-sub" id="compassText">Girando...</p>`);
+ window.LNSMusic?.effect('compassStart');
+ const compassSound=setInterval(()=>window.LNSMusic?.effect('compassTick'),130);
+ await wait(90);const needle=$('bigNeedle');if(needle){needle.style.transitionDuration=`${Math.max(1.1,1.65*factor)}s`;needle.style.transform=`rotate(${1080+direction*45}deg)`;}
+ if(!await delay(1650)){clearInterval(compassSound);busy=false;return}
+ clearInterval(compassSound);window.LNSMusic?.effect('compassStop');
+ $('compassText').textContent=`Direção: ${dirs[direction]}`;
+ if(!await delay(450)){busy=false;return}
+ const defender=byIso.get(state.get(picked.target.iso).owner);
+ if(!defender||defender.iso===attacker.iso){busy=false;hideStage();clearMapMessage();return}
+ hideStage();battleOutline(attacker.iso,picked.target.iso);mapMessage(`🧭 ${dirs[direction]} → ${flag(defender.iso)} ${defender.name} defende`);
+ // A direção se refere ao território realmente atingido, não à capital
+ // ou ao centro de um império que já conquistou outras nações.
+ await focusOnNation(picked.target.iso,Math.round(1200*factor));
+ if(token!==sequence){busy=false;return}
+ $('direction').textContent=dirs[direction];$('needle').setAttribute('transform',`rotate(${direction*45} 100 100)`);
+ if(!await delay(1700)){busy=false;return}
+ const a=state.get(attacker.iso),d=state.get(defender.iso);
+ $('af').textContent=flag(attacker.iso);$('df').textContent=flag(defender.iso);$('an').textContent=attacker.name;$('dn').textContent=defender.name;
+ $('ap').textContent=`Força ${a.power}`;$('dp').textContent=`Força ${d.power}`;$('ad').textContent='—';$('dd').textContent='—';
+ showStage(`<h2>⚔️ BATALHA DE DADOS</h2><div class="battle-head">${duelFlags(attacker,defender)}</div><div class="battle-score"><span>ATQ <b id="atkPoints">0</b></span><strong>POINTS</strong><span><b id="defPoints">0</b> DEF</span></div><div class="battle-grid"><div class="battle-column"><div class="dice-column-label">ATACANTE · 3 DADOS</div><div id="attackDice" class="battle-dice-list"><span class="battle-die attack">?</span><span class="battle-die attack">?</span><span class="battle-die attack">?</span></div></div><div class="battle-middle"><span>VS</span><span>VS</span><span>—</span></div><div class="battle-column"><div class="dice-column-label">DEFENSOR · 2 DADOS</div><div id="defenseDice" class="battle-dice-list"><span class="battle-die defense">?</span><span class="battle-die defense">?</span><span class="battle-die defense placeholder">—</span></div></div></div><p id="turnTitle" class="battle-turn">Preparando os dados...</p><p class="stage-sub" id="scoreLine">O menor dado do atacante é descartado</p>`);
+ // Cada país lança seu conjunto uma vez. O atacante descarta o menor dado;
+ // os outros dois enfrentam os dois dados do defensor em pares ordenados.
+ function paintDice(id,values,side,discardIndex=-1){
+  const el=$(id);if(!el)return;
+  el.innerHTML=values.map((n,i)=>`<span class="battle-die ${side} ${i===discardIndex?'discarded':''}" data-die-index="${i}">${n}</span>`).join('')+(values.length===2?'<span class="battle-die defense placeholder">—</span>':'');
+ }
+ async function rollBothDice(){
+  $('turnTitle').textContent='🎲 Atacante e defensor lançam juntos!';
+  $('scoreLine').textContent='Os cinco dados estão girando ao mesmo tempo...';
+  const attackTray=$('attackDice'),defenseTray=$('defenseDice');
+  if(!attackTray||!defenseTray)return null;
+  const attackElements=[...attackTray.querySelectorAll('.battle-die:not(.placeholder)')];
+  const defenseElements=[...defenseTray.querySelectorAll('.battle-die:not(.placeholder)')];
+  const allElements=[...attackElements,...defenseElements];
+  allElements.forEach(el=>el.classList.add('rolling'));
+  for(let i=0;i<12;i++){
+   allElements.forEach(el=>el.textContent=1+rand(6));
+   window.LNSMusic?.effect('diceRoll',i);
+   if(!await delay(95))return null;
+  }
+  const attackValues=Array.from({length:3},()=>1+rand(6));
+  const defenseValues=Array.from({length:2},()=>1+rand(6));
+  const lowIndex=attackValues.indexOf(Math.min(...attackValues));
+  const attackBest=attackValues.filter((_,i)=>i!==lowIndex).sort((a,b)=>b-a);
+  const defenseBest=[...defenseValues].sort((a,b)=>b-a);
+  paintDice('attackDice',[...attackBest,attackValues[lowIndex]],'attack',2);
+  paintDice('defenseDice',defenseBest,'defense');
+  window.LNSMusic?.effect('diceStop');
+  $('scoreLine').textContent=`Menor dado do atacante (${attackValues[lowIndex]}) descartado`;
+  return {attackRoll:{values:attackValues,best:attackBest},defendRoll:{values:defenseValues,best:defenseBest}};
+ }
+ async function diceRound(extra=false){
+  $('atkPoints').textContent='0';$('defPoints').textContent='0';
+  paintDice('attackDice',['?','?','?'],'attack');paintDice('defenseDice',['?','?'],'defense');
+  if(extra){
+   $('turnTitle').textContent='🎲 RODADA EXTRA DE DESEMPATE';
+   $('scoreLine').textContent='Empate! Ambos lançam novamente.';
+   if(!await delay(1100))return null;
+  }
+  const rolls=await rollBothDice();if(!rolls)return null;
+  const {attackRoll,defendRoll}=rolls;
+  $('ad').textContent=`${attackRoll.values.join(' · ')} → ${attackRoll.best.join(' e ')}`;
+  $('dd').textContent=`${defendRoll.values.join(' · ')} → ${defendRoll.best.join(' e ')}`;
+  if(!await delay(1100))return null;
+  let da=0,dd=0;
+  for(let i=0;i<2;i++){
+   const av=attackRoll.best[i],dv=defendRoll.best[i];
+   const ae=$('attackDice').children[i],de=$('defenseDice').children[i];
+   ae.classList.add('compared');de.classList.add('compared');
+   if(av>dv){da++;ae.classList.add('won');de.classList.add('lost')}
+   else if(dv>av){dd++;de.classList.add('won');ae.classList.add('lost')}
+   else {ae.classList.add('tied');de.classList.add('tied')}
+   $('atkPoints').textContent=da;$('defPoints').textContent=dd;
+   $('turnTitle').textContent=`⚔️ ${extra?'Desempate · ':''}Duelo ${i+1}/2: ${av} × ${dv}`;
+   $('scoreLine').textContent=av>dv?'Ponto para o atacante':dv>av?'Ponto para o defensor':'Dados iguais: ninguém pontua';
+   if(!await delay(1450))return null;
+  }
+  $('turnTitle').textContent=`${extra?'Rodada extra':'Primeira rodada'}: ${attacker.name} ${da} × ${dd} ${defender.name}`;
+  $('scoreLine').textContent=da===dd?'Empate na pontuação':da>dd?'Atacante venceu os duelos':'Defensor venceu os duelos';
+  if(!await delay(1100))return null;
+  return {da,dd};
+ }
+ let score=await diceRound(false);if(!score){busy=false;return}
+ if(score.da===score.dd){
+  score=await diceRound(true);if(!score){busy=false;return}
+ }
+ const {da,dd}=score;
+ let conqueredWinnerIso=null;
+ // Empate após a rodada extra: ninguém perde território.
+ round++;
+ $('step').textContent='⚔ Próxima batalha';
+ if(!playing)$('start').textContent='▶ Continuar';
+ if(da===dd){$('result').textContent=`🤝 Empate também na rodada extra (${da} a ${dd})! Ninguém perdeu território.`;addLog(`${flag(attacker.iso)} ${attacker.name} empatou com ${flag(defender.iso)} ${defender.name} (${da} × ${dd})`);$('turnTitle').textContent='🤝 EMPATE!';$('scoreLine').textContent='Ninguém perde território';}
+ else{const winner=da>dd?attacker:defender,loser=da>dd?defender:attacker;const ws=state.get(winner.iso),ls=state.get(loser.iso),gained=ownedBy(loser.iso).length;
+ for(const c of COUNTRIES)if(state.get(c.iso).owner===loser.iso)state.get(c.iso).owner=winner.iso;
+ eliminationOrder.push(loser.iso);ws.power+=Math.ceil(ls.power*.25);ws.wins++;ws.score+=150+20*gained;ws.territories+=gained;ls.territories=0;
+ for(const c of living())state.get(c.iso).score+=5;
+ $('result').textContent=`🏆 ${flag(winner.iso)} ${winner.name} conquistou ${gained} território(s)!`;
+ addLog(`${flag(winner.iso)} ${winner.name} conquistou ${flag(loser.iso)} ${loser.name} (+${gained} território(s))`);
+ window.LNSMusic?.effect('win');
+ $('turnTitle').textContent=`🏆 ${winner.name} VENCEU!`;$('scoreLine').textContent=`A bandeira de ${winner.name} substitui a de ${loser.name}!`;
+ selected={attacker:winner.iso,defender:loser.iso};conqueredWinnerIso=winner.iso;}
+ refresh();if(window.applyEmbeddedFlags)window.applyEmbeddedFlags();
+ // Exibe o mapa atualizado depois dos dados, antes de aproximar a conquista.
+ hideStage();clearBattleOutline();
+ if(conqueredWinnerIso){
+  const conqueredName=byIso.get(conqueredWinnerIso)?.name||'País vencedor';
+  mapMessage(`🏆 ${conqueredName}: território total após a conquista`);
+  await focusOnNation(conqueredWinnerIso,Math.round(1150*factor));
+  if(token!==sequence){busy=false;return}
+  if(!await delay(1650)){busy=false;return}
+ }else{
+  if(!await delay(650)){busy=false;return}
+ }
+ clearMapMessage();
+ // Centraliza novamente o mapa inteiro antes da próxima batalha.
+ await resetCamera(Math.round(950*factor));
+ if(token!==sequence){busy=false;return}
+ if(living().length===1){window.LNSMusic?.effect('champion');endGame()}busy=false;
+ if(playing){timer=setTimeout(loop,Math.max(100,350*factor))}
+}
+function battle(){return cinematicBattle()}
+function addLog(t){const el=document.createElement('div');el.textContent=`#${round} · ${t}`;$('log').prepend(el);while($('log').children.length>70)$('log').lastChild.remove()}
+function refresh(){const alive=living();$('alive').textContent=alive.length;$('round').textContent=round;$('territories').textContent=COUNTRIES.length;$('status').textContent=alive.length===1?'🏆 Partida encerrada!':`Restam ${alive.length} nações independentes. As batalhas empatadas não eliminam países.`;
+ const sorted=[...alive].sort((a,b)=>state.get(b.iso).territories-state.get(a.iso).territories||state.get(b.iso).power-state.get(a.iso).power).slice(0,7);$('leaders').innerHTML=sorted.map((c,i)=>`<div class="leader"><span class="place">${i+1}º</span><span>${flag(c.iso)}</span><span class="name">${c.name}</span><span class="value">${state.get(c.iso).territories} territ.</span></div>`).join('');
+ updateInlineRanking();if(paths){paths.attr('fill','none');if(window.applyEmbeddedFlags)window.applyEmbeddedFlags();}}
+// Classificação final determinada somente pela sobrevivência: campeão,
+// último eliminado (vice), penúltimo eliminado (3º), etc.
+function finalStandings(){
+ const champion=living()[0];
+ const ordered=champion?[champion]:[];
+ for(const iso of [...eliminationOrder].reverse()){
+  const c=byIso.get(iso);if(c)ordered.push(c);
+ }
+ return ordered;
+}
+function rankingRows(final=false){
+ const all=final?finalStandings():living();
+ if(!final)all.sort((a,b)=>state.get(b.iso).territories-state.get(a.iso).territories || state.get(b.iso).score-state.get(a.iso).score);
+ return all.slice(0,final?COUNTRIES.length:20).map((c,i)=>{
+  const st=state.get(c.iso);
+  const label=final?(i===0?'Campeão':i===1?'Vice-campeão':`Eliminado em ${COUNTRIES.length-i}º`):`${st.territories} territ.`;
+  return `<div class="rank-entry"><span class="rank-position">${i+1}º</span><span class="rank-flag">${flag(c.iso)}</span><span class="rank-name">${c.name}</span><span class="rank-value">${label}</span></div>`;
+ }).join('');
+}
+function updateInlineRanking(){if(!initialized)return; if(living().length>1){$('rankInline').hidden=false;$('finalInline').hidden=true;}const el=$('rankInlineRows');if(!el)return;el.innerHTML=rankingRows(false);$('rankCaption').textContent=`${living().length} nações restantes · ${round} batalhas`;}
+function showFinalRanking(){
+ const champion=living()[0];if(!champion)return;
+ $('finalInline').hidden=false;
+ $('finalInline').innerHTML=`<div class="champion-trophy">🏆</div><h2>CAMPEÃO MUNDIAL</h2><div class="champion-flag">${flag(champion.iso)}</div><h3>${champion.name}</h3><p>Conquistou todos os ${COUNTRIES.length} territórios em ${round} batalhas!</p><div class="final-navigation"><button id="playAgain" class="primary">↻ Jogar novamente</button><button id="finalMenu">⌂ Menu inicial</button></div><div class="share-actions"><button id="shareResult" class="primary">↗ Compartilhar resultado</button><button id="saveResult">↓ Salvar imagem</button></div><h3>🏆 Ranking final — ordem de eliminação</h3><div class="final-ranks">${rankingRows(true)}</div>`;
+ $('rankInline').hidden=true;
+ hideStage();$('finalInline').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function endGame(){showFinalRanking();playing=false;clearTimeout(timer);$('start').textContent='▶ Continuar';const c=living()[0];if(c){$('result').textContent=`🏆 ${flag(c.iso)} ${c.name} DOMINOU O MUNDO!`;$('status').textContent=`CAMPEÃO: ${c.name} — ${round} batalhas, ${state.get(c.iso).power} de poder.`;addLog(`🏆 CAMPEÃO MUNDIAL: ${c.name}`)}}
+function loop(){if(!playing||busy)return;cinematicBattle()}
+$('start').onclick=()=>{if(!initialized)return;if(living().length<=1)fresh();playing=!playing;$('start').textContent=playing?'⏸ Pausar':(round===0?'▶ Automático':'▶ Continuar');clearTimeout(timer);if(playing&&!busy)loop()};$('step').onclick=()=>{if(!initialized||busy)return;playing=false;clearTimeout(timer);$('start').textContent=round===0?'▶ Automático':'▶ Continuar';battle()};$('reset').onclick=()=>{sequence++;busy=false;hideStage();clearMapMessage();fresh()};$('speed').onchange=()=>{};
+
+async function makeResultImage(){
+ const champ=living()[0];if(!champ)return null;
+ const sorted=finalStandings().slice(0,3);
+ const cv=document.createElement('canvas');cv.width=1080;cv.height=1080;const c=cv.getContext('2d');
+ const grad=c.createLinearGradient(0,0,1080,1080);grad.addColorStop(0,'#071524');grad.addColorStop(1,'#15385c');c.fillStyle=grad;c.fillRect(0,0,1080,1080);
+ c.textAlign='center';c.fillStyle='#f4c665';c.font='bold 55px Arial';c.fillText('LAST NATION STANDING',540,110);c.font='120px Arial';c.fillText('🏆',540,260);
+ c.fillStyle='white';c.font='bold 68px Arial';c.fillText(champ.name.toUpperCase(),540,360);c.font='31px Arial';c.fillText(`${champ.name} venceu dominando ${COUNTRIES.length} territórios!`,540,420);
+ c.fillStyle='#f4c665';c.font='bold 43px Arial';c.fillText('PÓDIO FINAL',540,520);
+ for(let i=0;i<3;i++){let p=sorted[i];c.fillStyle=i===0?'#f5c457':i===1?'#c8d5e3':'#db9561';c.font='bold 39px Arial';c.fillText(`${i+1}º  ${p.name}${i===0?" — CAMPEÃO":i===1?" — VICE":" — 3º LUGAR"}`,540,610+i*105)}
+ c.fillStyle='#9db4cf';c.font='26px Arial';c.fillText(`${round} batalhas disputadas`,540,990);
+ return new Promise(resolve=>cv.toBlob(resolve,'image/png'));
+}
+async function exportResult(share){const blob=await makeResultImage();if(!blob)return;const file=new File([blob],'last-nation-standing-resultado.png',{type:'image/png'});
+ if(share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Last Nation Standing'});return}catch(e){if(e.name==='AbortError')return}}
+ if(window.AndroidBridge && typeof window.AndroidBridge.exportImage==='function'){
+  const reader=new FileReader();reader.onload=()=>window.AndroidBridge.exportImage(reader.result,!!share);reader.readAsDataURL(blob);return;
+ }
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
+}
+document.addEventListener('click',e=>{if(e.target.closest('#shareResult'))exportResult(true);if(e.target.closest('#saveResult'))exportResult(false)});
+document.addEventListener('click',e=>{if(e.target.closest('#finalMenu'))window.LNSMenu?.open();if(e.target.closest('#playAgain')){if(confirm('Recomeçar esta partida do zero? O progresso atual será substituído.')){fresh();window.LNSMenu?.save();window.scrollTo({top:0,behavior:'smooth'});}}});
+function setupMap(world){svg=d3.select('#map');const width=1000,height=535;projection=d3.geoEqualEarth().fitExtent([[12,20],[width-12,height-18]],{type:'Sphere'});geoPath=d3.geoPath(projection);const defs=svg.append('defs');
+ svg.append('path').datum({type:'Sphere'}).attr('class','ocean').attr('d',geoPath);g=svg.append('g');const geometries=world.objects.countries.geometries;
+ const geoNeighbors=topojson.neighbors(geometries);
+ borderNeighbors=new Map();
+ geometries.forEach((geom,i)=>{const country=byNum.get(String(+geom.id));if(!country)return;const adj=geoNeighbors[i].map(j=>byNum.get(String(+geometries[j].id))?.iso).filter(Boolean);borderNeighbors.set(country.iso,new Set(adj))});
+ const all=topojson.feature(world,world.objects.countries).features;features=all.map(f=>{const c=byNum.get(String(+f.id));return c?{...f,country:c}:null}).filter(Boolean);
+ for(const f of features){let center=d3.geoCentroid(f);if(!Number.isFinite(center[0]))center=[0,0];f.country.center=center}
+ // Assign approximate positions for microstates omitted from world-atlas geometry.
+ const micro={ad:[1.6,42.55],ag:[-61.8,17.1],bb:[-59.55,13.2],dm:[-61.35,15.4],gd:[-61.7,12.1],ki:[-157.4,1.9],li:[9.55,47.16],mc:[7.42,43.74],mh:[171.2,7.1],fm:[158.2,6.9],nr:[166.9,-0.53],pw:[134.5,7.5],kn:[-62.7,17.3],lc:[-61,13.9],vc:[-61.2,13.2],ws:[-172.1,-13.75],sm:[12.45,43.94],st:[6.7,0.3],sc:[55.45,-4.62],to:[-175.2,-21.1],tv:[179.2,-8.5],va:[12.45,41.9],ps:[35.2,31.8],mt:[14.4,35.9],sg:[103.8,1.3],bh:[50.55,26.05],mv:[73.2,3.2],cv:[-23.6,15.1],mu:[57.5,-20.2]};for(const c of COUNTRIES)if(!c.center)c.center=micro[c.iso]||[0,0];
+ paths=g.selectAll('path.country').data(features).enter().append('path').attr('d',geoPath).attr('class','country').on('mousemove',(event,d)=>showTip(event,d.country)).on('mouseleave',()=>{$('tooltip').style.display='none'}).on('click',(event,d)=>showInfo(d.country));
+ // Bandeiras como imagens SVG reais recortadas pelo contorno geográfico de cada país.
+ // Evita a falha de <pattern> + <image> no Chrome Android.
+ // Cada polígono separado (continente, ilha ou território distante) recebe
+ // sua própria bandeira completa. Isso evita que territórios ultramarinos
+ // distorçam a bandeira da França, Portugal, Noruega e outros países.
+ paths.each(function(d){
+  const iso=d.country.iso;
+  const parts=d.geometry.type==='MultiPolygon'
+   ? d.geometry.coordinates.map(coords=>({type:'Feature',geometry:{type:'Polygon',coordinates:coords},properties:{}}))
+   : [d];
+  parts.forEach((part,index)=>{
+   // Compute image bounds from the projected vertices, NOT geoPath.bounds().
+   // geoPath.bounds can return the entire globe for some winding orders, which
+   // crops France to its white stripe and Spain/Portugal to a single colour.
+   const vertices=[];
+   const collect=coords=>{
+    if(!Array.isArray(coords))return;
+    if(typeof coords[0]==='number' && typeof coords[1]==='number'){
+     const pt=projection(coords);
+     if(pt && pt.every(Number.isFinite))vertices.push(pt);
+    }else coords.forEach(collect);
+   };
+   collect(part.geometry.coordinates);
+   if(!vertices.length)return;
+   const xs=vertices.map(p=>p[0]),ys=vertices.map(p=>p[1]);
+   const x=Math.min(...xs),y=Math.min(...ys);
+   const w=Math.max(...xs)-x,h=Math.max(...ys)-y;
+   if(![x,y,w,h].every(Number.isFinite)||w<=0||h<=0)return;
+   const clipId='clip-flag-'+iso+'-'+index;
+   defs.append('clipPath').attr('id',clipId).attr('clipPathUnits','userSpaceOnUse')
+    .append('path').attr('d',geoPath(part));
+   g.append('image').attr('class','territory-flag-image')
+    .attr('data-territory',iso).attr('data-owner',iso)
+    .attr('x',x).attr('y',y).attr('width',Math.max(.1,w)).attr('height',Math.max(.1,h))
+    .attr('preserveAspectRatio','none')
+    .attr('clip-path','url(#'+clipId+')')
+    .attr('href',`https://flagcdn.com/w320/${iso}.png`)
+    .style('pointer-events','none');
+  });
+ });
+ g.selectAll('path.country').raise().attr('fill','none');
+ function applyEmbeddedFlags(){
+  if(!paths)return;
+  g.selectAll('image.territory-flag-image').each(function(){
+   const territory=this.getAttribute('data-territory');
+   const owner=state.get(territory)?.owner;
+   if(owner&&this.getAttribute('data-owner')!==owner){
+    this.setAttribute('data-owner',owner);
+    this.setAttribute('href',`https://flagcdn.com/w320/${owner}.png`);
+   }
+  });
+ }
+ window.applyEmbeddedFlags=applyEmbeddedFlags;
+ const tiny=COUNTRIES.filter(c=>!features.some(f=>f.country.iso===c.iso));g.selectAll('text.micro').data(tiny).enter().append('text').attr('class','micro').attr('x',d=>projection(d.center)?.[0]||0).attr('y',d=>projection(d.center)?.[1]||0).attr('font-size',11).attr('text-anchor','middle').text(d=>flag(d.iso)).style('cursor','pointer').on('click',(event,d)=>showInfo(d));
+ zoom=d3.zoom().scaleExtent([1,20]).on('zoom',event=>g.attr('transform',event.transform));svg.call(zoom);$('resetZoom').onclick=()=>svg.transition().duration(450).call(zoom.transform,d3.zoomIdentity);initialized=true;fresh();finishBoot();}
+function showTip(event,c){const owner=byIso.get(state.get(c.iso).owner);$('tooltip').innerHTML=`<b>${flag(owner.iso)} ${owner.name}</b><br>Território: ${c.name}<br>Territórios: ${state.get(owner.iso).territories}`;$('tooltip').style.display='block';$('tooltip').style.left=Math.min(event.clientX+14,innerWidth-230)+'px';$('tooltip').style.top=Math.min(event.clientY+14,innerHeight-100)+'px'}
+function showInfo(c){const owner=byIso.get(state.get(c.iso).owner);$('result').textContent=`${flag(owner.iso)} ${owner.name} controla ${c.name} · ${state.get(owner.iso).territories} territórios`}
+startBoot();if(typeof d3==='undefined'||typeof topojson==='undefined'){failBoot();}else fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json').then(r=>{if(!r.ok)throw Error('Falha ao baixar mapa');return r.json()}).then(setupMap).catch(e=>{$('status').textContent='Não foi possível carregar o mapa: '+e.message+' — confira a internet e atualize a página.';failBoot();});
+</script>
+<script>
+
+(function(){
+ const pref='lns_music_enabled_v1', fxpref='lns_sfx_enabled_v1';
+ let enabled=localStorage.getItem(pref)!=='no', fxEnabled=localStorage.getItem(fxpref)!=='no';
+ let ctx=null, timer=null, beat=0;
+ function context(){if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C()}if(ctx.state==='suspended')ctx.resume().catch(()=>{});return ctx}
+ function tone(freq,duration=0.18,type='sine',volume=.09,delay=0){
+  const c=context();if(!c)return;
+  const t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),t+.025);
+  g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+  o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+duration+.02);
+ }
+ // Trilha ambiente contemplativa: acordes longos, sem batida ou melodia agitada.
+ const chords=[[174.61,220,261.63],[164.81,196,246.94],[146.83,174.61,220],[164.81,220,261.63]];
+ function musicBeat(){
+  if(!enabled||document.hidden)return;
+  const chord=chords[beat%chords.length];
+  chord.forEach((f,i)=>tone(f,4.9,'sine',i===0?.035:.020,i*.22));
+  // Uma nota suave e espaçada, como piano ambiente.
+  tone(chord[2]*2,2.4,'sine',.016,.85);
+  beat++;
+ }
+ function start(){if(!enabled||document.hidden||timer)return;context();musicBeat();timer=setInterval(musicBeat,5400);update()}
+ function stop(){if(timer){clearInterval(timer);timer=null}}
+ function update(){
+  const label=enabled?'♫ Música: ligada':'♫ Música: desligada';
+  for(const id of ['gameMusicToggle','menuMusicToggle']){const b=document.getElementById(id);if(b){b.textContent=label;b.setAttribute('aria-pressed',String(enabled))}}
+ }
+ function toggle(){enabled=!enabled;localStorage.setItem(pref,enabled?'yes':'no');if(enabled)start();else stop();update()}
+ function effect(kind,index=0){
+  if(!fxEnabled)return;
+  if(kind==='roulette'){tone(680+index%3*70,.055,'triangle',.065)}
+  else if(kind==='diceRoll'){tone(130+(index%4)*32,.075,'square',.035);tone(95+(index%3)*23,.09,'triangle',.035,.02)}
+  else if(kind==='diceStop'){tone(235,.11,'triangle',.085);tone(175,.18,'sine',.07,.09)}
+  else if(kind==='selected'){tone(520,.13,'sine',.09);tone(780,.22,'sine',.08,.13)}
+  else if(kind==='battle'){tone(175,.12,'sawtooth',.06);tone(130,.22,'triangle',.07,.12)}
+  else if(kind==='compassStart'){tone(290,.16,'sine',.04)}
+  else if(kind==='compassTick'){tone(420+Math.random()*120,.055,'triangle',.055)}
+  else if(kind==='compassStop'){tone(620,.17,'sine',.095);tone(830,.3,'triangle',.065,.14)}
+  else if(kind==='champion'){[392,493.88,587.33,783.99].forEach((f,i)=>tone(f,.6,'triangle',.095,i*.19))}
+  else if(kind==='win'){tone(392,.17,'triangle',.09);tone(523,.23,'triangle',.09,.16);tone(659,.38,'triangle',.08,.34)}
+  else tone(520,.08,'sine',.045);
+ }
+ document.addEventListener('click',e=>{
+  if(e.target.closest('#gameMusicToggle,#menuMusicToggle')){toggle();effect('click')}
+  else {if(enabled&&!timer)start();if(e.target.closest('button'))effect('click')}
+ });
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else {if(ctx&&enabled)start();update()}});
+ document.addEventListener('pointerdown',()=>{if(enabled&&!timer)start()},{passive:true});
+ document.addEventListener('keydown',()=>{if(enabled&&!timer)start()});
+ // Detect completed battle text changes without interfering with game mechanics.
+ const obs=new MutationObserver(mutations=>{
+  for(const m of mutations){const el=m.target.nodeType===1?m.target:m.target.parentElement;
+   if(el?.closest?.('#result') && el.textContent && !/Inicie a simulação|Aguardando/.test(el.textContent)){effect('battle');break}
+  }
+ });
+ window.addEventListener('load',()=>{const el=document.getElementById('result');if(el)obs.observe(el,{childList:true,characterData:true,subtree:true})});
+ window.LNSMusic={update,stop,effect};update();
+})();
+(function(){
+ const splash=document.getElementById('mbStudioSplash');
+ // Mostrar a marca em toda abertura, sem alterar as partidas salvas.
+ splash.style.display='flex';
+ setTimeout(()=>{splash.classList.add('fade-out');setTimeout(()=>splash.remove(),400)},3000);
+})();
+(function(){
+ 'use strict';
+ const KEY='lns_android_saves_v1';
+ const CURRENT='lns_android_current_v1';
+ const menu=document.getElementById('saveMenu');
+ const content=document.getElementById('saveMenuContent');
+ const message=document.getElementById('saveMessage');
+ let activeId=null;
+ let pendingStart=null;
+ let suppress=false;
+ function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+ function write(items){try{localStorage.setItem(KEY,JSON.stringify(items));return true}catch(e){message.textContent='Não foi possível salvar. Verifique o armazenamento do aparelho.';return false}}
+ function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function ready(){return typeof initialized!=='undefined'&&initialized&&typeof fresh==='function'&&typeof state!=='undefined'}
+ function capture(){if(!ready()||!activeId)return null;return {version:1,round,eliminationOrder:[...eliminationOrder],state:[...state.entries()],speed:document.getElementById('speed').value,updated:Date.now()}}
+ function save(){if(suppress||!activeId)return;const snapshot=capture();if(!snapshot)return;const items=read();const idx=items.findIndex(x=>x.id===activeId);if(idx<0)return;items[idx].snapshot=snapshot;items[idx].updated=Date.now();write(items)}
+ function pause(){if(typeof playing!=='undefined'){playing=false;clearTimeout(timer);document.getElementById('start').textContent=round===0?'▶ Automático':'▶ Continuar'}}
+ function stopStage(){if(typeof sequence!=='undefined')sequence++;if(typeof busy!=='undefined')busy=false;if(typeof hideStage==='function')hideStage();if(typeof clearMapMessage==='function')clearMapMessage();if(typeof clearBattleOutline==='function')clearBattleOutline()}
+ function showMenu(){pause();save();stopStage();menu.hidden=false;renderHome()}
+ function begin(id){
+   if(!ready()){pendingStart=id;message.textContent='Preparando o mapa. Aguarde alguns instantes…';return}
+   const entry=read().find(x=>x.id===id);if(!entry){renderHome();return}
+   suppress=true;pause();stopStage();fresh();activeId=id;
+   const s=entry.snapshot;
+   if(s&&s.version===1&&Array.isArray(s.state)&&s.state.length===COUNTRIES.length){
+     state.clear();for(const [iso,data] of s.state)state.set(iso,data);
+     eliminationOrder=[...s.eliminationOrder];round=s.round;
+     if(s.speed)document.getElementById('speed').value=s.speed;
+     document.getElementById('step').textContent=round?'⚔ Próxima batalha':'⚔ Começar batalha';
+     document.getElementById('start').textContent=round?'▶ Continuar':'▶ Automático';
+     document.getElementById('result').textContent=`Partida “${entry.name}” restaurada — ${round} batalhas`;
+     refresh();if(window.applyEmbeddedFlags)window.applyEmbeddedFlags();
+     if(typeof resetCamera==='function')resetCamera(0);
+     if(living().length===1)showFinalRanking();
+   }
+   suppress=false;menu.hidden=true;localStorage.setItem(CURRENT,id);save();
+ }
+
+ const importFile=document.getElementById('backupImportFile');
+ function validEntry(x){return x&&typeof x==='object'&&typeof x.id==='string'&&x.id.length<100&&typeof x.name==='string'&&x.name.length<=80&&(!x.snapshot||(x.snapshot.version===1&&Array.isArray(x.snapshot.state)&&x.snapshot.state.length===COUNTRIES.length&&Array.isArray(x.snapshot.eliminationOrder)&&Number.isInteger(x.snapshot.round)&&x.snapshot.round>=0&&x.snapshot.round<10000000))}
+ function exportBackup(){save();const entries=read();if(!entries.length){message.textContent='Não há partidas para exportar.';return}const payload={format:'LNS_SAVE_BACKUP',version:1,exportedAt:new Date().toISOString(),saves:entries};const data=JSON.stringify(payload);const name='LastNationStanding-backup-'+new Date().toISOString().slice(0,10)+'.json';if(window.AndroidBridge?.exportBackup){window.AndroidBridge.exportBackup(data,name);message.textContent='Escolha onde salvar o arquivo de backup.';return}const blob=new Blob([data],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);message.textContent='Backup exportado.'}
+ function importBackupText(text){try{if(typeof text!=='string'||text.length>6000000)throw Error('Arquivo muito grande.');const obj=JSON.parse(text);if(obj.format!=='LNS_SAVE_BACKUP'||obj.version!==1||!Array.isArray(obj.saves)||obj.saves.length>100||!obj.saves.every(validEntry))throw Error('Este não é um backup válido do jogo.');const old=read();const ids=new Set(old.map(x=>x.id));let count=0;for(const s of obj.saves){let id=s.id;while(ids.has(id))id='import-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);ids.add(id);old.push({id,name:s.name,updated:Number(s.updated)||Date.now(),snapshot:s.snapshot||null});count++}if(!write(old))return;renderHome();message.textContent=`${count} partida(s) importada(s) com sucesso!`; }catch(e){message.textContent='Falha na importação: '+(e.message||'arquivo inválido')}}
+ window.LNSImportBackup=importBackupText;
+ importFile.addEventListener('change',async()=>{const file=importFile.files?.[0];if(!file)return;if(file.size>6000000){message.textContent='Arquivo muito grande.';return}importBackupText(await file.text());importFile.value='' });
+ function renderHome(){
+   const has=read().length>0;
+   content.innerHTML=`<div class="save-actions"><button class="primary" data-act="new">＋ Novo jogo</button>${has?'<button data-act="continue">▶ Continuar jogo</button>':''}<button data-act="help">❔ Ajuda</button></div><div class="backup-actions"><button data-act="export">⇩ Exportar saves</button><button data-act="import">⇧ Importar saves</button></div><p class="backup-note">O backup contém todas as suas partidas. Guarde o arquivo para recuperar seu progresso.</p><div class="help-entry" style="margin-top:15px;text-align:center"><strong>📱 TikTok oficial</strong><p>Acompanhe novidades e batalhas do Last Nation Standing.</p><a href="https://www.tiktok.com/@lastnation.game" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 18px;background:#202e42;color:white;border:1px solid #6e839b;border-radius:12px;text-decoration:none;font-weight:700">@lastnation.game ↗</a></div><div class="audio-row"><span>♫ Música ambiente</span><button id="menuMusicToggle" type="button">Música: desligada</button></div>`;window.LNSMusic?.update();
+   message.textContent='';
+ }
+ function renderNew(){content.innerHTML='<h2>Nova partida</h2><p>Escolha um nome para identificar seu progresso.</p><form id="newSaveForm"><input id="saveName" maxlength="40" required autocomplete="off" placeholder="Ex.: Minha conquista mundial" aria-label="Nome da partida"><button class="primary" style="width:100%" type="submit">Criar e começar</button></form><button class="save-back" data-act="home" style="margin-top:12px;width:100%">Voltar</button>';document.getElementById('saveName').focus()}
+ function renderContinue(){const items=read().sort((a,b)=>b.updated-a.updated);content.innerHTML='<h2>Continuar jogo</h2><p>Escolha uma partida salva.</p>'+items.map(s=>`<div class="save-item"><div><div class="save-title">${esc(s.name)}</div><small>${s.snapshot?.round||0} batalhas · ${s.snapshot?.eliminationOrder?195-s.snapshot.eliminationOrder.length:195} nações restantes</small></div><button data-open="${esc(s.id)}">Continuar</button><button aria-label="Excluir partida" title="Excluir partida" data-delete="${esc(s.id)}">✕</button></div>`).join('')+'<button class="save-back" data-act="home" style="width:100%;margin-top:14px">Voltar</button>'}
+ function renderHelp(){content.innerHTML=`<h2>❔ Ajuda</h2><div class="help-entry"><strong>Como começo?</strong><p>Toque em Novo jogo, dê um nome à partida e escolha Automático ou Começar batalha.</p></div><div class="help-entry"><strong>Como funciona a bússola?</strong><p>A direção sorteada orienta a escolha do defensor. O jogo prioriza territórios vizinhos.</p></div><div class="help-entry"><strong>Como funcionam os dados?</strong><p>O atacante lança 3 dados de 1 a 6 e descarta o menor. O defensor lança 2. Os dois pares são comparados do maior para o menor; cada vitória vale 1 ponto.</p></div><div class="help-entry"><strong>E se empatar?</strong><p>Os países jogam uma rodada extra. Se empatarem novamente, ninguém perde território.</p></div><div class="help-entry"><strong>Preciso salvar?</strong><p>Não. O jogo salva automaticamente após cada batalha e ao sair pelo Menu principal. Se você fechar durante uma batalha, continuará do último resultado completo.</p></div><div class="help-entry"><strong>Como funciona o ranking final?</strong><p>O último sobrevivente é campeão, o último eliminado é vice e o primeiro eliminado fica em último lugar.</p></div><div class="help-entry"><strong>Como faço backup?</strong><p>No menu inicial, toque em Exportar saves para guardar todas as partidas em JSON. Use Importar saves para recuperá-las em outro aparelho. Partidas importadas são adicionadas sem apagar as atuais.</p></div><div class="help-entry"><strong>Como funciona a música?</strong><p>A trilha instrumental é opcional. Você pode ligar ou desligar no menu ou durante a partida.</p></div><div class="help-entry"><strong>Preciso de internet?</strong><p>Nesta versão, sim, para carregar o mapa e as bandeiras.</p></div><div class="help-entry"><strong>Ainda tem dúvidas?</strong><p>Se ainda tiver dúvidas, mande uma mensagem no nosso TikTok: <a href="https://www.tiktok.com/@lastnation.game" target="_blank" rel="noopener noreferrer" style="color:#8fc7ff;font-weight:bold">@lastnation.game ↗</a></p></div><button class="save-back" data-act="home" style="width:100%;margin-top:16px">Voltar</button>`}
+ content.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;const act=el.dataset.act;if(act==='new')renderNew();if(act==='continue')renderContinue();if(act==='help')renderHelp();if(act==='export')exportBackup();if(act==='import'){if(window.AndroidBridge?.importBackup)window.AndroidBridge.importBackup();else importFile.click()}if(act==='home')renderHome();if(el.dataset.open)begin(el.dataset.open);if(el.dataset.delete){const id=el.dataset.delete;const item=read().find(x=>x.id===id);if(item&&confirm(`Excluir a partida “${item.name}”? Essa ação não pode ser desfeita.`)){write(read().filter(x=>x.id!==id));if(activeId===id)activeId=null;renderContinue()}}});
+ content.addEventListener('submit',e=>{if(e.target.id!=='newSaveForm')return;e.preventDefault();const name=document.getElementById('saveName').value.trim();if(!name){message.textContent='Digite um nome para a partida.';return}const id='save-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);const items=read();items.push({id,name,updated:Date.now(),snapshot:null});if(write(items))begin(id)});
+ document.getElementById('returnMenu').addEventListener('click',showMenu);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+ window.addEventListener('pagehide',save);
+ // O estado só é persistido quando o resultado de uma batalha já foi aplicado.
+ // O refresh também é usado na criação do mundo: sem activeId, nada é salvo.
+ const hook=setInterval(()=>{
+   if(!ready())return;
+   clearInterval(hook);
+   const original=window.refresh;
+   window.refresh=function(){const result=original.apply(this,arguments);if(!suppress&&activeId)save();return result};
+   if(pendingStart){const id=pendingStart;pendingStart=null;begin(id)}
+ },150);
+ window.LNSMenu={open:showMenu,save,visible:()=>!menu.hidden};
+ renderHome();
+})();
+</script>
+</body></html>
